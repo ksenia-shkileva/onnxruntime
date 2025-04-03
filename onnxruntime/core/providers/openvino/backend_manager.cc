@@ -18,6 +18,7 @@
 #include "core/providers/openvino/backend_manager.h"
 #include "core/providers/openvino/ibackend.h"
 #include "core/providers/openvino/backend_utils.h"
+#include "openvino/util/common_util.hpp"
 #include "core/providers/openvino/qdq_transformations/qdq_stripping.h"
 
 namespace onnxruntime {
@@ -365,9 +366,16 @@ BackendManager::GetModelProtoFromFusedNode(const onnxruntime::Node& fused_node,
 
     // getting all the OV properties
     auto supported_properties = OVCore::Get()->core.get_property(session_context_.device_type, ov::supported_properties);
+    LOGS_DEFAULT(INFO) << "[OpenVINO-EP]: supported_properties size = " << supported_properties.size();
+
+    auto supported1 = std::find(supported_properties.begin(), supported_properties.end(), ov::intel_npu::qdq_optimization) != supported_properties.end();
+    if (supported1) {
+      LOGS_DEFAULT(INFO) << "[OpenVINO-EP]: supported2: std::find(supported_properties.begin(), supported_properties.end(), ov::intel_npu::qdq_optimization) != supported_properties.end()";
+    }
+    auto supported = std::find(supported_properties.begin(), supported_properties.end(), "NPU_QDQ_OPTIMIZATION") != supported_properties.end();
 
     // query ov properties for deciding on which stripping to use
-    if (std::find(supported_properties.begin(), supported_properties.end(), "NPU_QDQ_OPTIMIZATION") != supported_properties.end()) { // 25.1 exist or not
+    if (supported) { // 25.1 exist or not
 
       // compiler stripping is off by default turning it on explicitly
       OVCore::Get()->core.set_property("NPU", {ov::intel_npu::qdq_optimization(true)});
