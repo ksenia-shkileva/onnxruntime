@@ -18,7 +18,6 @@
 #include "core/providers/openvino/backend_manager.h"
 #include "core/providers/openvino/ibackend.h"
 #include "core/providers/openvino/backend_utils.h"
-#include "openvino/util/common_util.hpp"
 #include "core/providers/openvino/qdq_transformations/qdq_stripping.h"
 
 namespace onnxruntime {
